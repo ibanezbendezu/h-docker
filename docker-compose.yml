@@ -1,0 +1,34 @@
+# YAML configuration file for Docker Compose version 3.8
+version: '3.8'
+
+# Define services
+services:
+
+  # Database service using PostgreSQL image
+  database:
+    image: postgres:latest  # Use the latest PostgreSQL image from Docker Hub
+    environment:
+      POSTGRES_DB: db  # Define the name of the database
+      POSTGRES_USER: postgres    # Define the username for accessing the database
+      POSTGRES_PASSWORD: pass  # Define the password for the user
+    ports:
+      - "5432:5432"  # Forward the container's port 5432 to the host machine's port 5432 for accessing PostgreSQL
+
+  # Backend service
+  backend:
+    image: ibanezbendezu/hound-server:latest  # Use the latest version of the backend service image from Docker Hub
+    ports:
+      - "5000:5000"  # Forward the container's port 5000 to the host machine's port 5000 for accessing the backend service
+    depends_on:
+      - database  # Ensure that the backend service starts after the database service is up and running
+    environment:
+      # Define environment variables directly here
+      - DATABASE_URL=postgres://postgres:pass@database:5432/db
+      - CLIENT_URL=http://localhost:3000
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=3600
+      - GH_OAUTH_CLIENT_ID=${GH_OAUTH_CLIENT_ID}
+      - GH_OAUTH_CLIENT_SECRET=${GH_OAUTH_CLIENT_SECRET}
+      - GH_OAUTH_CALLBACK_URL=http://localhost:5000/auth/github/callback
+      - GH_TOKEN=${GH_TOKEN}
+      - PORT=5000
